@@ -1,6 +1,3 @@
-// https://stripe.com/docs/webhooks/signatures#verify-manually
-// const webhook_endpoint_secret = "whsec_4279b220ceec22b94873693786cc2b4e09245da72a600ef264fbaf48c5a8fe74";
-
 let webhook_url = "";  // will be fetched from environment variables
 let default_avatar_url = "https://media.discordapp.net/attachments/261053355793580032/1084349163698929744/meme-boy-gets-paid-4140-196a182847d3123a0e377b1059e07ceb1x.png";
 const webhook_message_template = {
