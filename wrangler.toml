@@ -2,6 +2,18 @@ name = "btmc-stripe-webhooks"
 main = "src/index.js"
 compatibility_date = "2023-03-12"
 
-[vars]
-DISCORD_WEBHOOK_URL = ""
-DISCORD_WEBHOOK_AVATAR_URL = ""
+[env.preview]
+kv_namespaces = [
+    { binding = "", preview_id = "", id = "" }
+]
+
+vars = {DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = ""}
+
+
+
+[env.production]
+kv_namespaces = [
+    { binding = "", id = "" }
+]
+
+vars = { DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = ""}
