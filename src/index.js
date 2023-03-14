@@ -41,10 +41,7 @@ export default {
      * @type {{STRIPE_KEY:string, donos:{}}} env
      */
     async scheduled(controller, env, ctx) {
-        // await env.donos.put("test2", "set from update.js on" + (new Date()).toISOString());
-        // // await ctx.env.donos.put("test3", JSON.stringify({"test": "test1inner", "test2": "test2inner"}));
-        // JSON.stringify(JSON.parse(await env.donos.get("test3")))
-
+        const baseQuery = 'https://api.stripe.com/v1/charges/search?query=status%3A\'succeeded\'';
         const options = {
             method: 'GET',
             headers: {
@@ -52,7 +49,6 @@ export default {
             }
         };
 
-        const baseQuery = 'https://api.stripe.com/v1/charges/search?query=status%3A\'succeeded\'';
 
         let resp = await fetch(baseQuery, options);
         /** @type {{object:string, data:[], has_more:boolean, next_page:string|null}} data */
@@ -69,23 +65,14 @@ export default {
             resp = await fetch(baseQuery + "&" + new URLSearchParams({"page": data.next_page}), options)
             data = await resp.json();
             collectedData.push(...data.data);
-            // console.log(collectedData.length);
         }
-
-        // not needed, test mode or live mode depends on the API key used
-        // // filter to live mode only
-        // collectedData = collectedData.filter((cd) => {
-        //     return cd.livemode;
-        // })
 
         let kvData = [];
         for (let charge of collectedData) {
             kvData.push({"name": charge.metadata.username ?? "unknown", "amount": charge.amount, "currency": charge.currency});
         }
-        // console.log(JSON.stringify(kvData, null, 2));
 
         await env.donos.put("donos", JSON.stringify(kvData));
-
     },
 
     async fetch(request, env, ctx) {
