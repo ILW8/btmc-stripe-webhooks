@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 // https://stripe.com/docs/webhooks/signatures#verify-manually
 // const webhook_endpoint_secret = "whsec_4279b220ceec22b94873693786cc2b4e09245da72a600ef264fbaf48c5a8fe74";
 
@@ -32,8 +34,60 @@ const webhook_message_template = {
     "attachments": []
 }
 
-// noinspection JSUnusedLocalSymbols
+// noinspection JSUnusedLocalSymbols,SpellCheckingInspection
 export default {
+    /**
+     * env provided by cloudflare (most likely wrangler.toml or values manually set from dashboard)
+     * @type {{STRIPE_KEY:string, donos:{}}} env
+     */
+    async scheduled(controller, env, ctx) {
+        // await env.donos.put("test2", "set from update.js on" + (new Date()).toISOString());
+        // // await ctx.env.donos.put("test3", JSON.stringify({"test": "test1inner", "test2": "test2inner"}));
+        // JSON.stringify(JSON.parse(await env.donos.get("test3")))
+
+        const options = {
+            method: 'GET',
+            headers: {
+                Authorization: 'Basic ' + btoa(env.STRIPE_KEY + ":"),
+            }
+        };
+
+        const baseQuery = 'https://api.stripe.com/v1/charges/search?query=status%3A\'succeeded\'';
+
+        let resp = await fetch(baseQuery, options);
+        /** @type {{object:string, data:[], has_more:boolean, next_page:string|null}} data */
+        let data = await resp.json();
+
+        // noinspection SpellCheckingInspection
+        /** @type {[{livemode:boolean, metadata:{username:string}|{}, amount:number, currency:string}]} collectedData */
+        let collectedData = JSON.parse(JSON.stringify(data.data)); // deep-copy
+
+        console.log(collectedData.length);
+
+        // follow pagination
+        while (data.has_more) {
+            resp = await fetch(baseQuery + "&" + new URLSearchParams({"page": data.next_page}), options)
+            data = await resp.json();
+            collectedData.push(...data.data);
+            // console.log(collectedData.length);
+        }
+
+        // not needed, test mode or live mode depends on the API key used
+        // // filter to live mode only
+        // collectedData = collectedData.filter((cd) => {
+        //     return cd.livemode;
+        // })
+
+        let kvData = [];
+        for (let charge of collectedData) {
+            kvData.push({"name": charge.metadata.username ?? "unknown", "amount": charge.amount, "currency": charge.currency});
+        }
+        // console.log(JSON.stringify(kvData, null, 2));
+
+        await env.donos.put("donos", JSON.stringify(kvData));
+
+    },
+
     async fetch(request, env, ctx) {
         // webhook handler
         const {pathname} = new URL(request.url);
@@ -45,7 +99,7 @@ export default {
         // set environment variables inside wrangler.toml in this project directory or set them directly on
         // cloudflare workers page (settings tab on the top, then variables tab on the left)
         webhook_message_template.avatar_url = env.DISCORD_WEBHOOK_AVATAR_URL ?? default_avatar_url;
-        if (!("DISCORD_WEBHOOK_URL" in env) || env.DISCORD_WEBHOOK_URL.length === 0){
+        if (!("DISCORD_WEBHOOK_URL" in env) || env.DISCORD_WEBHOOK_URL.length === 0) {
             return new Response("This worker is misconfigured. Required environment variable(s) are missing.", {status: 500});
         }
         webhook_url = env.DISCORD_WEBHOOK_URL
