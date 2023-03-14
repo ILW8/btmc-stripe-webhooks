@@ -4,7 +4,7 @@ compatibility_date = "2023-03-12"
 
 [env.preview]
 kv_namespaces = [
-    { binding = "", preview_id = "", id = "" }
+    { binding = "donos", preview_id = "", id = "" }
 ]
 
 vars = {DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = ""}
@@ -13,7 +13,7 @@ vars = {DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = 
 
 [env.production]
 kv_namespaces = [
-    { binding = "", id = "" }
+    { binding = "donos", id = "" }
 ]
 
 vars = { DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = ""}
