@@ -8,6 +8,8 @@ kv_namespaces = [
 
 vars = { DISCORD_WEBHOOK_URL = "", DISCORD_WEBHOOK_AVATAR_URL = "", STRIPE_KEY = ""}
 
+[triggers]
+crons = ["*/5 * * * *"]
 
 [env.preview]
 kv_namespaces = [
