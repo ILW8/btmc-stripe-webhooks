@@ -55,7 +55,7 @@ export default {
         let data = await resp.json();
 
         // noinspection SpellCheckingInspection
-        /** @type {[{livemode:boolean, metadata:{username:string}|{}, amount:number, currency:string}]} collectedData */
+        /** @type {[{livemode:boolean, metadata:{username:string}|{}, amount:number, currency:string, created:number}]} collectedData */
         let collectedData = JSON.parse(JSON.stringify(data.data)); // deep-copy
 
         console.log(collectedData.length);
@@ -69,7 +69,7 @@ export default {
 
         let kvData = [];
         for (let charge of collectedData) {
-            kvData.push({"name": charge.metadata.username ?? "unknown", "amount": charge.amount, "currency": charge.currency});
+            kvData.push({"name": charge.metadata.username ?? "unknown", "amount": charge.amount, "currency": charge.currency, "timestamp": charge.created});
         }
 
         await env.donos.put("donos", JSON.stringify(kvData));
